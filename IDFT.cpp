@@ -57,9 +57,9 @@ int main()
     vector<complex<double>>signal(n);
     for(int i=0; i<n; i++)
     {
-        double r,im;
-        cin>>r>>im;
-        signal[i] = complex<double>(r,im);
+        double real,imag;
+        cin>>real>>imag;
+        signal[i] = complex<double>(real,imag);
     }
     auto ans = (idft(signal));
     cout(ans);
