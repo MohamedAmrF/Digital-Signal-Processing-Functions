@@ -19,16 +19,16 @@ vector<complex<double>> dft(vector<double>&signal)
 {
     vector<complex<double>>ans;
     int N = signal.size();
-
+    complex<double> i = complex<double>(0,1);
     // let zeta = e^(-2*pi*i/N);
-    complex<double>zeta = exp(-2*pi/N*complex<double>(0,1));
+    complex<double>zeta = exp(-2*pi/N*i);
 
-    for(int i=0; i<N; i++)
+    for(int k=0; k<N; k++)
     {
         complex<double>sum = 0;
-        for(int j=0; j<N; j++)
+        for(int n=0; n<N; n++)
         {
-            sum += signal[j] * pow(zeta, j*i);
+            sum += signal[n] * pow(zeta, n*k);
         }
         // rounding the real and the imaginary parts of the answer if they are so close to zero (compared using eps)
         sum = complex<double>((AsmallerthanEPS(real(sum))?0:real(sum)), (AsmallerthanEPS(imag(sum))?0:imag(sum)));
