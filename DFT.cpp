@@ -28,9 +28,7 @@ vector<complex<double>> dft(vector<double>&signal)
         complex<double>sum = 0;
         for(int j=0; j<N; j++)
         {
-            complex<double>temp;
-            temp = signal[j] * pow(zeta, j*i);
-            sum += temp;
+            sum += signal[j] * pow(zeta, j*i);
         }
         // rounding the real and the imaginary parts of the answer if they are so close to zero (compared using eps)
         sum = complex<double>((AsmallerthanEPS(real(sum))?0:real(sum)), (AsmallerthanEPS(imag(sum))?0:imag(sum)));
