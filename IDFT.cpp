@@ -30,7 +30,6 @@ vector<complex<double>> idft(vector<complex<double>>&signal)
 {
     vector<complex<double>>ans;
     int N = signal.size();
-    cout << N << "\n\n";
     complex<double> i = complex<double>(0,1);
     // let zeta = e^(-2*pi*i/N);
     complex<double>zeta = exp(2.0*pi/N*i);
