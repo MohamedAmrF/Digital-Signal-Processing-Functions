@@ -1,5 +1,5 @@
 # 1. Discrete Fourier Transform (DFT.cpp)
-A program to compute DFT of a given signal
+A program to compute DFT of a given signal.
 
 ## Input:
 Enter the number of samples in your signal in the first line.  
@@ -16,7 +16,7 @@ Each sample will be represented in complex numbers.
 complex number will be written in the format of (real, imag).
 ### Example:
 - 1 + 1i &rarr; (1, -1)
-- -i     &rarr; (0, -1); 
+- -i     &rarr; (0, -1)
 
 ## Demo:
 ### input:
@@ -54,7 +54,7 @@ Each sample will be represented in complex numbers.
 complex number will be written in the format of (real, imag).
 ### Example:
 - 1 + 1i &rarr; (1, -1)
-- -i     &rarr; (0, -1); 
+- -i     &rarr; (0, -1)
 
 ## Demo:
 ### input:
