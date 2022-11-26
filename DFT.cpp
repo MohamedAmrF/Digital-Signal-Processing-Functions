@@ -38,15 +38,6 @@ vector<complex<double>> dft(vector<double>&signal)
     return ans;
 }
 
-void solve()
-{       
-    int n;      cin>>n;
-    vector<double>signal(n);
-    cin(signal);
-    auto ans = (dft(signal));
-    cout(ans);
-}
-
 int main()
 {
     int n;      cin>>n;
