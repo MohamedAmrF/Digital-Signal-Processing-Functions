@@ -2,8 +2,8 @@
 A program to compute DFT of a given signal.
 
 ## Input:
-Enter the number of samples in your signal in the first line.  
-Enter the sample values of your signal in the second line.  
+Enter the number of samples in your signal in the first line.  ( ***n*** )  
+Enter the sample values of your signal in the second line.  ***X(0, 1, 2, .., n-1)***
 
 ### Example: 
 ```
@@ -33,7 +33,7 @@ complex number will be written in the format of (real, imag).
 
 <br/>
 
-# 2.Inverse Dicrete fourier transform (IDFT.cpp)
+# 2.Inverse Discrete fourier transform (IDFT.cpp)
 A program to compute ***IDFT*** of a given signal.
 
 ## Input:
