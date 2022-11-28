@@ -37,8 +37,8 @@ complex number will be written in the format of (real, imag).
 A program to compute ***IDFT*** of a given signal.
 
 ## Input:
-Enter the number of samples(N) in your signal in the first line.
-Enter the sample values of your signal in the following (N) lines in the following format: "real imag".
+Enter the number of samples (***N***) in your signal in the first line.  
+Enter the sample values of your signal in the following (***N***) lines in the following format: "real imag".
 
 ### Example: 
 ```
