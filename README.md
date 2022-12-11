@@ -70,6 +70,7 @@ complex number will be written in the format of (real, imag).
 (1,0) (1,0) (-1,0) (0,0) 
 ```
 
+<br> <br/>
 
 # 3. Digital Convolution (convolution.cpp)
 
@@ -84,5 +85,25 @@ Writes ***output signal*** to a ***.dat*** file.
 Writes ***input signal*** to a ***.dat*** file.  
 Writes ***impulse response*** to a ***.dat*** file.  
 
-- You can use **gnuplot** to plot the ***.dat*** files.
+- You can use **gnuplot** to plot the ***.dat*** files.  
+  
+<br> <br/>
 
+# 4. Windowing Functions (windows.cpp)
+
+- Available functions: ```triang```, ```hamming```, ``hanning``.  
+
+## Input:
+You Can construct a vector using the construct vector function.  
+``` cpp
+vector<double>t = construct_vector(0, 10, 0.5);
+```
+this function simulates matlab's ```linspace``` function or this line in matlab: 
+``` matlab
+t = 0:0.5:10;
+```
+
+## Output: 
+Prints the ***vector*** after using any window function.  
+Creates files using ```write_to_file``` function as shown in the main as an example.    
+Which can be plotted using ***gnuplot***.  
