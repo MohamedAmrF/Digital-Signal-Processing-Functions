@@ -96,6 +96,7 @@ Writes ***impulse response*** to a ***.dat*** file.
 ## Input:
 You Can construct a vector using the construct vector function.  
 ``` cpp
+vector<double>t = construct_vector(initial_value, final_value, step);
 vector<double>t = construct_vector(0, 10, 0.5);
 ```
 this function simulates matlab's ```linspace``` function or this line in matlab: 
