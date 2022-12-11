@@ -74,7 +74,7 @@ complex number will be written in the format of (real, imag).
 # 3. Digital Convolution (convolution.cpp)
 
 ## Input:
-Takes two inputs and convolves them.
+Takes two inputs and convolves them.  
 Two samples are represented in waveforms.c file.
 
 ## Output: 
