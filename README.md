@@ -75,6 +75,7 @@ complex number will be written in the format of (real, imag).
 
 ## Input:
 Takes two inputs and convolves them.
+Two samples are represented in waveforms.c file.
 
 ## Output: 
 Return a vector of samples representing the output signal.
