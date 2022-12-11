@@ -69,3 +69,19 @@ complex number will be written in the format of (real, imag).
 ```
 (1,0) (1,0) (-1,0) (0,0) 
 ```
+
+
+# 3. Digital Convolution (convolution.cpp)
+
+## Input:
+Takes two inputs and convolves them.
+
+## Output: 
+Return a vector of samples representing the output signal.
+
+Writes ***output signal*** to a ***.dat*** file.  
+Writes ***input signal*** to a ***.dat*** file.  
+Writes ***impulse response*** to a ***.dat*** file.  
+
+- You can use **gnuplot** to plot the ***.dat*** files.
+
