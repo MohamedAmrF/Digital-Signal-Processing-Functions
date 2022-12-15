@@ -1,53 +1,62 @@
 #include <bits/stdc++.h>
-#include <ext/pb_ds/assoc_container.hpp>
-#include <ext/pb_ds/tree_policy.hpp>
- 
+
 using namespace std;
-using namespace __gnu_pbds;
 
-template <typename K, typename V, typename Comp = std::less<K>>
-using ordered_map = tree<K, V, Comp, rb_tree_tag, tree_order_statistics_node_update>;
-template <typename K, typename Comp = std::less<K>>
-using ordered_set = ordered_map<K, null_type, Comp>;
-
-template <typename K, typename V, typename Comp = std::less_equal<K>>
-using ordered_multimap = tree<K, V, Comp, rb_tree_tag, tree_order_statistics_node_update>;
-template <typename K, typename Comp = std::less_equal<K>>
-using ordered_multiset = ordered_multimap<K, null_type, Comp>;
-
-#define ll long long
-#define nl "\n"
-#define mod 1'000'000'007
 #define cin(vec) for (auto &i : vec) cin >> i
 #define cout(vec) for (auto &i : vec) cout << i << " ";cout << '\n';
-#define all(v) v.begin(), v.end()
-#define rall(v) v.rbegin(),v.rend()
-#define fixed(n) fixed << setprecision(n)
-#define ceil(n, m) (((n) / (m)) + ((n) % (m) ? 1 : 0))
-#define Time cerr << "Time Taken: " << (float)clock()/CLOCKS_PER_SEC << " secs\n";
+#define pi (3.14159265358979323846)
+#define EPS 0.01
 
-void HamokshaIsinTheHouse()
+
+bool AsmallerthanEPS (double a)
 {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-    #ifndef ONLINE_JUDGE
-    freopen("in.txt", "r", stdin);
-    freopen("out.txt", "w", stdout);
-    #endif
+    return (a<EPS) && (-a < EPS);
 }
 
-void solve()
-{       
-    
+complex<double>multiplycomplex(complex<double>a, complex<double>b)
+{
+    double r1,i1,r2,i2;
+    r1 = real(a);
+    i1 = imag(a);
+    r2 = real(b);
+    i2 = imag(b);
+    return complex<double>((r1*r2-i1*i2), (r1*i2 + r2*i1));
 }
+
+vector<complex<double>> idft(vector<complex<double>>&signal)
+{
+    vector<complex<double>>ans;
+    int N = signal.size();
+    complex<double> i = complex<double>(0,1);
+    // let zeta = e^(-2*pi*i/N);
+    complex<double>zeta = exp(2.0*pi/N*i);
+
+    for(int k=0; k<N; k++)
+    {
+        complex<double>sum = 0;
+        for(int n=0; n<N; n++)
+        {
+            sum += multiplycomplex(signal[n], pow(zeta, n*k));
+        }
+        // rounding the real and the imaginary parts of the answer if they are so close to zero (compared using eps)
+        sum = complex<double>((AsmallerthanEPS(real(sum))?0:real(sum))/N, (AsmallerthanEPS(imag(sum))?0:imag(sum))/N);
+
+        ans.push_back(sum);
+    }
+    return ans;
+}
+
 
 int main()
 {
-    HamokshaIsinTheHouse();
-    int t = 1;
-    // cin >> t;  
-    while(t--)
-        solve();
-    Time 
-    return 0;
+    int n;      cin>>n;
+    vector<complex<double>>signal(n);
+    for(int i=0; i<n; i++)
+    {
+        double real,imag;
+        cin>>real>>imag;
+        signal[i] = complex<double>(real,imag);
+    }
+    auto ans = (idft(signal));
+    cout(ans);
 }

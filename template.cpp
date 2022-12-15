@@ -4,26 +4,53 @@ using namespace std;
 #define cin(vec) for (auto &i : vec) cin >> i
 #define cout(vec) for (auto &i : vec) cout << i << " ";cout << '\n';
 #define pi (3.14159265358979323846)
+#define EPS 0.01
 
+// Construct Signals functions
 vector<double> construct_vector(double initial_value, double final_value, double step);
+vector<double> construct_sin_signal(double amplitude, double frequency, double phase_rad, vector<double>&time);
+vector<double> construct_cos_signal(double amplitude, double frequency, double phase_rad, vector<double>&time);
+vector<double> complex_to_amplitude_spectrum(vector<complex<double>>& signal);
+vector<double> add_signals(vector<double>& signal1, vector<double>& signal2);
+
+// Window functions
 vector<double> triang(vector<double>& signal);
 vector<double> hamming(vector<double>& signal);
 vector<double> hanning(vector<double>& signal);
+
+// Prepare files to plot using gnuplot
 void write_to_file(vector<double>& signal, string file_name);
-vector<double> construct_sin_signal(double amplitude, double frequency, double phase_rad, vector<double>&time);
-vector<double> construct_cos_signal(double amplitude, double frequency, double phase_rad, vector<double>&time);
+void write_to_file(vector<double>& x_axis, vector<double>& y_axis, string file_name);       // to print x axis values.
+
+
+// DSP Operations / functions
+bool AsmallerthanEPS (double a);
+complex<double>multiplycomplex(complex<double>a, complex<double>b);
+
 vector<double> convolution(vector<double>&source_signal, vector<double>&impulse_response);
+
+vector<complex<double>> dft(vector<double>&signal);
+vector<complex<double>> idft(vector<complex<double>>&signal);
+void fftshift(vector<double>& signal);
+/////////////////////////////////////////////////////////////////
+
 
 int main()
 {
-    vector<double> temp = construct_vector(0, 1, 1/100.0);
-    vector<double> temp2 = construct_sin_signal(1, 10, 0, temp);
-    write_to_file(temp, "one.dat");
-    write_to_file(temp2, "two.dat");
-    vector<double> temp3 = hamming(temp2), temp4 = triang(temp2);
-    write_to_file(temp3, "three.dat");
-    write_to_file(temp4, "four.dat");
-    cout(temp2);
+    double fs = 100;                                            // sampling frequency
+    vector<double> t = construct_vector(0, 1, 1/fs);            // time vector (x-axis)
+    vector<double> signal = construct_sin_signal(1, 10, 0, t);
+    vector<double> signal_hamming = hamming(signal);
+    vector<double> signal_triang = triang(signal);
+    vector<complex<double>> signal_dft_complex = dft(signal);
+    vector<double> signal_dft_amplitude_spectrum = complex_to_amplitude_spectrum(signal_dft_complex);
+    vector<double> frequency_axis = construct_vector(-fs/2, fs/2, fs/(signal.size()));
+    fftshift(frequency_axis);
+    write_to_file(t, "one.dat");                                // time (x-axis)
+    write_to_file(signal, "two.dat");                           // signal (y-axis)
+    write_to_file(signal_hamming, "three.dat");
+    write_to_file(frequency_axis, signal_dft_amplitude_spectrum, "four.dat");
+    
     return 0;
 }
 
@@ -131,4 +158,108 @@ vector<double> convolution(vector<double>&source_signal, vector<double>&impulse_
         }
     }
     return output_signal;
+}
+
+
+bool AsmallerthanEPS (double a)
+{
+    return (a<EPS) && (-a < EPS);
+}
+
+vector<complex<double>> dft(vector<double>&signal)
+{
+    vector<complex<double>>ans;
+    int N = signal.size();
+    complex<double> i = complex<double>(0,1);
+    // let zeta = e^(-2*pi*i/N);
+    complex<double>zeta = exp(-2*pi/N*i);
+
+    for(int k=0; k<N; k++)
+    {
+        complex<double>sum = 0;
+        for(int n=0; n<N; n++)
+        {
+            sum += signal[n] * pow(zeta, n*k);
+        }
+        // rounding the real and the imaginary parts of the answer if they are so close to zero (compared using eps)
+        sum = complex<double>((AsmallerthanEPS(real(sum))?0:real(sum)), (AsmallerthanEPS(imag(sum))?0:imag(sum)));
+        
+        ans.push_back(sum);
+    }
+    return ans;
+}
+
+complex<double>multiplycomplex(complex<double>a, complex<double>b)
+{
+    double r1,i1,r2,i2;
+    r1 = real(a);
+    i1 = imag(a);
+    r2 = real(b);
+    i2 = imag(b);
+    return complex<double>((r1*r2-i1*i2), (r1*i2 + r2*i1));
+}
+
+
+vector<complex<double>> idft(vector<complex<double>>&signal)
+{
+    vector<complex<double>>ans;
+    int N = signal.size();
+    complex<double> i = complex<double>(0,1);
+    // let zeta = e^(-2*pi*i/N);
+    complex<double>zeta = exp(2.0*pi/N*i);
+
+    for(int k=0; k<N; k++)
+    {
+        complex<double>sum = 0;
+        for(int n=0; n<N; n++)
+        {
+            sum += multiplycomplex(signal[n], pow(zeta, n*k));
+        }
+        // rounding the real and the imaginary parts of the answer if they are so close to zero (compared using eps)
+        sum = complex<double>((AsmallerthanEPS(real(sum))?0:real(sum))/N, (AsmallerthanEPS(imag(sum))?0:imag(sum))/N);
+
+        ans.push_back(sum);
+    }
+    return ans;
+}
+
+vector<double> complex_to_amplitude_spectrum(vector<complex<double>>& signal)
+{
+    int N = signal.size();
+    vector<double>ans(N);
+    for(int i=0; i<signal.size(); i++)
+    {
+        ans[i] = abs(signal[i])*1/N;
+    }
+    return ans;
+}
+
+void write_to_file(vector<double>& x_axis, vector<double>& y_axis, string file_name)
+{
+    int N = min(x_axis.size(), y_axis.size());
+    FILE* file_ptr = fopen(file_name.c_str(), "w");
+    for(int i=0; i<N; i++)
+    {
+        fprintf(file_ptr, "\n%f \t %f", x_axis[i], y_axis[i]);
+    }
+    fclose(file_ptr);
+}
+void fftshift(vector<double>& signal)
+{
+    int n = signal.size();
+    int mid = n/2;
+    reverse(signal.begin(), signal.end());
+    reverse(signal.begin(), signal.begin()+mid);
+    reverse(signal.begin()+mid, signal.end());
+}
+
+vector<double> add_signals(vector<double>& signal1, vector<double>& signal2)
+{
+    int n = min(signal1.size(), signal2.size());
+    vector<double>ans(n);
+    for(int i=0; i<n; i++)
+    {
+        ans[i] = signal1[i] + signal2[i];
+    }
+    return ans;
 }
