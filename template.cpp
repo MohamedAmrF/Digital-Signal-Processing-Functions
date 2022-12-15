@@ -37,18 +37,27 @@ void fftshift(vector<double>& signal);
 
 int main()
 {
-    double fs = 100;                                            // sampling frequency
-    vector<double> t = construct_vector(0, 1, 1/fs);            // time vector (x-axis)
-    vector<double> signal = construct_sin_signal(1, 10, 0, t);
+    double fs = 8000; 
+    double f1 = 500, f2 = 1200, f3 = 1800;
+    double t_final = 0.1;                                           // sampling frequency
+    double amp = 5;
+    vector<double> t = construct_vector(0, t_final, 1/fs);            // time vector (x-axis)
+    vector<double> signal = construct_cos_signal(amp, f1, 0, t);
+    vector<double> signal2 = construct_cos_signal(amp, f2, 0.25*pi, t);
+    vector<double> signal3 = construct_cos_signal(amp, f3, 0.5*pi, t);
+    signal = add_signals(signal, signal2);
+    signal = add_signals(signal, signal3);
+
     vector<double> signal_hamming = hamming(signal);
     vector<double> signal_triang = triang(signal);
     vector<complex<double>> signal_dft_complex = dft(signal);
     vector<double> signal_dft_amplitude_spectrum = complex_to_amplitude_spectrum(signal_dft_complex);
     vector<double> frequency_axis = construct_vector(-fs/2, fs/2, fs/(signal.size()));
     fftshift(frequency_axis);
-    write_to_file(t, "one.dat");                                // time (x-axis)
-    write_to_file(signal, "two.dat");                           // signal (y-axis)
-    write_to_file(signal_hamming, "three.dat");
+
+    write_to_file(t, t, "one.dat");                                // time (x-axis)
+    write_to_file(t, signal, "two.dat");                           // signal (y-axis)
+    write_to_file(t, signal_hamming, "three.dat");
     write_to_file(frequency_axis, signal_dft_amplitude_spectrum, "four.dat");
     
     return 0;
