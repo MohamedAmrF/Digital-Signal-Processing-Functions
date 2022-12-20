@@ -33,39 +33,24 @@ vector<complex<double>> dft(vector<double>&signal);
 vector<complex<double>> idft(vector<complex<double>>&signal);
 void fftshift(vector<double>& signal);
 /////////////////////////////////////////////////////////////////
-
-// Frequency Response 
 vector<double> complex_to_abs(vector<complex<double>>& signal);
 vector<pair<complex<double>, double>>freqz(vector<double>B, vector<double>A, double N);
 
 
 int main()
 {
-    double fs = 8000;                                                       // sampling frequency
-    double f1 = 500, f2 = 1200, f3 = 1800;
-    double t_final = 0.1;                                               
-    double amp = 5;
-
-    vector<double> t = construct_vector(0, t_final, 1/fs);                  // time vector (x-axis)
-    vector<double> signal = construct_cos_signal(amp, f1, 0, t);            
-    vector<double> signal2 = construct_cos_signal(amp, f2, 0.25*pi, t);     
-    vector<double> signal3 = construct_cos_signal(amp, f3, 0.5*pi, t);
-    signal = add_signals(signal, signal2);
-    signal = add_signals(signal, signal3);
-
-    vector<double> signal_hamming = hamming(signal);
-    vector<double> signal_triang = triang(signal);
-
-    vector<complex<double>> signal_dft_complex = dft(signal);
-    vector<double> signal_dft_amplitude_spectrum = complex_to_amplitude_spectrum(signal_dft_complex);
-    vector<double> frequency_axis = construct_vector(-fs/2, fs/2, fs/(signal.size()));
-    fftshift(frequency_axis);
-
-    write_to_file(t, t, "one.dat");                                
-    write_to_file(t, signal, "two.dat");                           
-    write_to_file(t, signal_hamming, "three.dat");
-    write_to_file(frequency_axis, signal_dft_amplitude_spectrum, "four.dat");
-    
+    vector<double> B = {1, -0.5};
+    vector<double> A = {1};
+    vector<pair<complex<double>, double>> output = freqz(B, A, 64);
+    vector<complex<double>> H;
+    vector<double> W;
+    for(auto& i:output)
+    {
+        H.push_back(i.first);
+        W.push_back(i.second);
+    }
+    vector<double>H_amp = complex_to_abs(H);
+    write_to_file(W, H_amp, "one.dat");
     return 0;
 }
 
