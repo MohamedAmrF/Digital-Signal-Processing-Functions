@@ -1,10 +1,11 @@
 #include <bits/stdc++.h>
-using namespace std;
 
 #define cin(vec) for (auto &i : vec) cin >> i
 #define cout(vec) for (auto &i : vec) cout << i << " ";cout << '\n';
 #define pi (3.14159265358979323846)
 #define EPS 0.01
+
+using namespace std;
 
 // Construct Signals functions
 vector<double> construct_vector(double initial_value, double final_value, double step);
@@ -12,15 +13,18 @@ vector<double> construct_sin_signal(double amplitude, double frequency, double p
 vector<double> construct_cos_signal(double amplitude, double frequency, double phase_rad, vector<double>&time);
 vector<double> complex_to_amplitude_spectrum(vector<complex<double>>& signal);
 vector<double> add_signals(vector<double>& signal1, vector<double>& signal2);
+/////////////////////////////////////////////////////////////////
 
 // Window functions
 vector<double> triang(vector<double>& signal);
 vector<double> hamming(vector<double>& signal);
 vector<double> hanning(vector<double>& signal);
+/////////////////////////////////////////////////////////////////
 
 // Prepare files to plot using gnuplot
 void write_to_file(vector<double>& signal, string file_name);
 void write_to_file(vector<double>& x_axis, vector<double>& y_axis, string file_name);       // to print x axis values.
+/////////////////////////////////////////////////////////////////
 
 
 // DSP Operations / functions
@@ -38,41 +42,51 @@ void fftshift(vector<double>& signal);
 vector<double> complex_to_abs(vector<complex<double>>& signal);
 vector<pair<complex<double>, double>>freqz(vector<double>B, vector<double>A, double N);
 vector<double> to_db(vector<double>&h_amp);
+vector<double> construct_filter_coeffiecients(vector<double>& pos_values, double zero_value);
 /////////////////////////////////////////////////////////////////
 
-//Filtering
-vector<double> to_db(vector<double>&h_amp);
-vector<double> construct_filter_coeffiecients(vector<double>& pos_values, double zero_value);
-
-
+// Filter Functions
+vector<double> fir_filter(vector<double>& B, vector<double>& signal);
+/////////////////////////////////////////////////////////////////
 
 int main()
 {
-    double fs = 8000;                                                       // sampling frequency
-    double f1 = 500, f2 = 1200, f3 = 1800;
-    double t_final = 0.1;                                               
-    double amp = 5;
+    double fc = 800;                                    // Hz
+    double fs = 8000;
+    double omega_c = 2.0 * pi * fc / fs;
+    int number_taps = 17;
+    int M = (number_taps-1)/2;
+    double h_zero = omega_c / pi;
+    vector<double>pos;                                  // pos values
+    for(int i=1; i<=M; i++) 
+        pos.push_back(sin(omega_c * i)/(i*pi));
 
-    vector<double> t = construct_vector(0, t_final, 1/fs);                  // time vector (x-axis)
-    vector<double> signal = construct_cos_signal(amp, f1, 0, t);            
-    vector<double> signal2 = construct_cos_signal(amp, f2, 0.25*pi, t);     
-    vector<double> signal3 = construct_cos_signal(amp, f3, 0.5*pi, t);
+    vector<double>B = construct_filter_coeffiecients(pos, h_zero);
+    vector<double>A = {1};
+    B = hamming(B);
+    vector<pair<complex<double>, double>> output = freqz(B, A, 512);
+    vector<complex<double>> H;
+    vector<double> W;
+    for(auto& i:output)
+    {
+        H.push_back(i.first);
+        W.push_back(i.second);
+    }
+    vector<double>H_amp = complex_to_abs(H);
+    vector<double>h_amp_db = to_db(H_amp);
+    for(int i=0; i<W.size(); i++)
+    {
+        W[i] *= fs / 2 / pi;
+    }
+    //vector<double>h_amp_db_w = hamming(h_amp_db);
+    write_to_file(W, h_amp_db, "two.dat");
+    vector<double>t = construct_vector(0, 0.1, 1.0/fs);
+    vector<double>signal = construct_sin_signal(1, 2000, 0, t);
+    vector<double>signal2 = construct_sin_signal(1, 100, 0, t);
     signal = add_signals(signal, signal2);
-    signal = add_signals(signal, signal3);
-
-    vector<double> signal_hamming = hamming(signal);
-    vector<double> signal_triang = triang(signal);
-
-    vector<complex<double>> signal_dft_complex = dft(signal);
-    vector<double> signal_dft_amplitude_spectrum = complex_to_amplitude_spectrum(signal_dft_complex);
-    vector<double> frequency_axis = construct_vector(-fs/2, fs/2, fs/(signal.size()));
-    fftshift(frequency_axis);
-
-    write_to_file(t, t, "one.dat");                                
-    write_to_file(t, signal, "two.dat");                           
-    write_to_file(t, signal_hamming, "three.dat");
-    write_to_file(frequency_axis, signal_dft_amplitude_spectrum, "four.dat");
-    
+    vector<double> filtered_signal = fir_filter(B, signal);
+    write_to_file(t, signal, "four.dat");
+    write_to_file(t, filtered_signal, "three.dat");
     return 0;
 }
 
@@ -132,7 +146,7 @@ vector<double> hamming(vector<double>& signal)
     {
         w[i] = 0.54 - 0.46 * cos(2 * pi * i / (n-1));
     }
-
+    cout(w);
     for(int i=0; i<n; i++)
     {
         temp[i] = signal[i] * w[i];
@@ -343,4 +357,27 @@ vector<double> construct_filter_coeffiecients(vector<double>& pos_values, double
     second.push_back(zero_value);
     first.insert(first.begin(), second.begin(), second.end());
     return first;
+}
+
+vector<double> fir_filter(vector<double>& B, vector<double>& signal)
+{
+    int number_coefficients = B.size();
+    vector<double>ans(signal.size(), 0.0);
+    vector<double> buffer(number_coefficients, 0);          // initialize buffer with zeros
+
+    for(int j=0; j<signal.size(); j++){
+        double temp = 0.0;
+        for(int i=number_coefficients-1; i>0; i--)
+        {
+            buffer[i] = buffer[i-1];
+        }
+        buffer[0] = signal[j];
+
+        for(int i=0; i<number_coefficients; i++)
+        {
+            temp += B[i] * buffer[i];
+        }
+        ans[j] = temp;
+    }
+    return ans;
 }

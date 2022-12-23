@@ -35,12 +35,13 @@ void fftshift(vector<double>& signal);
 /////////////////////////////////////////////////////////////////
 vector<double> complex_to_abs(vector<complex<double>>& signal);
 vector<pair<complex<double>, double>>freqz(vector<double>B, vector<double>A, double N);
+vector<double> to_db(vector<double>&h_amp);
 
 
 int main()
 {
-    vector<double> B = {1, -0.5};
-    vector<double> A = {1};
+    vector<double> B = {-0.5, 0, 0.5};
+    vector<double> A = {0.25, -0.5, 1};
     vector<pair<complex<double>, double>> output = freqz(B, A, 64);
     vector<complex<double>> H;
     vector<double> W;
@@ -283,7 +284,7 @@ vector<pair<complex<double>, double>>freqz(vector<double>B, vector<double>A, dou
     complex<double> j = complex<double>(0, 1);
     complex<double>num;
     complex<double>denom;
-    vector<double> list_of_omegas = construct_vector(0, 1*pi, 1/(N));
+    vector<double> list_of_omegas = construct_vector(0, 1*pi, pi/(N));
     for(auto& omega: list_of_omegas)
     {
         num = 0.0;
@@ -300,4 +301,15 @@ vector<pair<complex<double>, double>>freqz(vector<double>B, vector<double>A, dou
         ans.push_back(make_pair(temp, omega));
     }
     return ans;
+}
+
+vector<double> to_db(vector<double>&h_amp)
+{
+    vector<double>temp;
+    for(auto& i:h_amp)
+    {
+        double h = 20 * log10(i);
+        temp.push_back(h);
+    }
+    return temp;
 }
