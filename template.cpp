@@ -40,9 +40,11 @@ vector<pair<complex<double>, double>>freqz(vector<double>B, vector<double>A, dou
 vector<double> to_db(vector<double>&h_amp);
 /////////////////////////////////////////////////////////////////
 
-//Filtering
+//Filtering Functions
 vector<double> to_db(vector<double>&h_amp);
 vector<double> construct_filter_coeffiecients(vector<double>& pos_values, double zero_value);
+vector<double> fir_filter(vector<double>& B, vector<double>& signal);
+/////////////////////////////////////////////////////////////////
 
 
 
@@ -343,4 +345,27 @@ vector<double> construct_filter_coeffiecients(vector<double>& pos_values, double
     second.push_back(zero_value);
     first.insert(first.begin(), second.begin(), second.end());
     return first;
+}
+
+vector<double> fir_filter(vector<double>& B, vector<double>& signal)
+{
+    int number_coefficients = B.size();
+    vector<double>ans(signal.size(), 0.0);
+    vector<double> buffer(number_coefficients, 0);          // initialize buffer with zeros
+
+    for(int j=0; j<signal.size(); j++){
+        double temp = 0.0;
+        for(int i=number_coefficients-1; i>0; i--)
+        {
+            buffer[i] = buffer[i-1];
+        }
+        buffer[0] = signal[j];
+
+        for(int i=0; i<number_coefficients; i++)
+        {
+            temp += B[i] * buffer[i];
+        }
+        ans[j] = temp;
+    }
+    return ans;
 }
