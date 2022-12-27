@@ -1,4 +1,6 @@
 #include <bits/stdc++.h>
+#include "AudioFile.h"
+
 using namespace std;
 
 #define cin(vec) for (auto &i : vec) cin >> i
@@ -48,33 +50,69 @@ vector<double> fir_filter(vector<double>& B, vector<double>& signal);
 
 vector<complex<double>> fft(vector<complex<double>>& p);
 vector<complex<double>> double_to_complex(vector<double>& p);
+
+AudioFile<double> audioFile;
+
 int main()
 {
-    double fs = 8000;                                                       // sampling frequency
-    double f1 = 500, f2 = 1200, f3 = 1800;
-    double t_final = 0.1;                                               
-    double amp = 5;
-
-    vector<double> t = construct_vector(0, t_final, 1/fs);                  // time vector (x-axis)
-    vector<double> signal = construct_cos_signal(amp, f1, 0, t);            
-    vector<double> signal2 = construct_cos_signal(amp, f2, 0.25*pi, t);     
-    vector<double> signal3 = construct_cos_signal(amp, f3, 0.5*pi, t);
-    signal = add_signals(signal, signal2);
-    signal = add_signals(signal, signal3);
-
-    vector<double> signal_hamming = hamming(signal);
-    vector<double> signal_triang = triang(signal);
-    vector<complex<double>> signal_complex = double_to_complex(signal);
-    vector<complex<double>> signal_dft_complex = fft(signal_complex);
-    vector<double> signal_dft_amplitude_spectrum = complex_to_amplitude_spectrum(signal_dft_complex);
-    vector<double> frequency_axis = construct_vector(-fs/2, fs/2, fs/(signal.size()));
+    audioFile.load ("C:/Users/Mohamed Amr/Downloads/Music/IFeelGood_10k.wav");
+    audioFile.printSummary();
+    int channel = 0;
+    int numSamples = audioFile.getNumSamplesPerChannel();
+    double fs = audioFile.getSampleRate();
+    vector<double>signal(numSamples);
+    for (int i = 0; i < numSamples; i++)
+    {
+        signal[i] = audioFile.samples[channel][i];
+    }
+    cout << "signal length = " << signal.size() << "\n";
+    vector<double>t = construct_vector(0, 45, 1.0/fs);
+    write_to_file(t,signal, "signal.dat");
+    vector<complex<double>>signal_c = double_to_complex(signal);
+    vector<complex<double>>dft_signal = fft(signal_c);
+    int n = signal_c.size();
+    vector<double> dft_signal_abs = complex_to_amplitude_spectrum(dft_signal);
+    vector<double> frequency_axis = construct_vector(-fs/2, fs/2, fs/(n));
     fftshift(frequency_axis);
+    write_to_file(frequency_axis, dft_signal_abs, "signal_dft.dat");
+    double fc = 2000;                                    // Hz
+    double omega_c = 2.0 * pi * fc / fs;
+    int number_taps = 3301;
+    int M = (number_taps-1)/2;
+    double h_zero = omega_c / pi;
+    vector<double>pos;                                  // pos values
+    for(int i=1; i<=M; i++) 
+        pos.push_back(sin(omega_c * i)/(i*pi));
 
-    write_to_file(t, t, "one.dat");                                
-    write_to_file(t, signal, "two.dat");                           
-    write_to_file(t, signal_hamming, "three.dat");
-    write_to_file(frequency_axis, signal_dft_amplitude_spectrum, "four.dat");
-    
+    vector<double>B = construct_filter_coeffiecients(pos, h_zero);
+    vector<double>A = {1};
+    B = hamming(B);
+    vector<pair<complex<double>, double>> output = freqz(B, A, 512);
+    vector<complex<double>> H;                  // complex frequency Response 
+    vector<double> W;                           // corresponding angle in radians
+    for(auto& i:output)
+    {
+        H.push_back(i.first);
+        W.push_back(i.second);
+    }
+    vector<double>H_amp = complex_to_abs(H);
+    vector<double>h_amp_db = to_db(H_amp);
+    for(int i=0; i<W.size(); i++)               // convert angle(rad) to frequency in Hz
+    {
+        W[i] *= fs / 2 / pi;
+    }
+    write_to_file(W, h_amp_db, "frequency response.dat");
+    vector<double> filtered_signal = fir_filter(B, signal);
+    write_to_file(t, filtered_signal, "Filtered Signal.dat");
+    vector<complex<double>> filtered_signal_c = double_to_complex(filtered_signal);
+    filtered_signal_c = fft(filtered_signal_c);
+    filtered_signal = complex_to_amplitude_spectrum(filtered_signal_c);
+    write_to_file(frequency_axis, filtered_signal, "Filtered Signal dft.dat");
+
+    // //write_to_file(t, signal, "four.dat");
+    // vector<complex<double>>dft_fsignal = dft(filtered_signal);
+    // vector<double> dft_fsignal_abs = complex_to_amplitude_spectrum(dft_fsignal);
+    // write_to_file(frequency_axis, dft_fsignal_abs, "three.dat");
     return 0;
 }
 
